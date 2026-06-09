@@ -1,0 +1,5 @@
+vagrant-test/
+**/.vagrant/
+*.log
+condivisa/
+.gitignore

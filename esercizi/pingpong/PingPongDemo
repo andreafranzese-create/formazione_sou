@@ -1,0 +1,51 @@
+Vagrant.configure("2") do |config|
+    config.vm.define "rocky2" do |config|
+    config.vm.box = "generic/rocky8"
+    config.vm.hostname = "rocky2"
+    config.vm.network "private_network", ip: "192.168.56.10"
+
+    config.vm.provision "shell", inline: <<-SHELL
+     dnf install podman -y
+     dnf install sshpass -y
+     sudo -u vagrant podman create --name ping alpine sleep 60
+     cat <<'FINE' > /home/vagrant/pingpong
+     #!/usr/bin/env bash
+     while true; do
+          podman start ping
+          echo ping
+          sleep 60
+          podman stop ping
+          sshpass -p "vagrant" ssh vagrant@192.168.56.12 "podman start pong"
+          echo pong
+          sleep 60 
+          sshpass -p "vagrant" ssh vagrant@192.168.56.12 "podman stop pong"
+     done
+     FINE
+     chmod +x /home/vagrant/pingpong
+     SHELL
+   
+    config.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+        vb.cpus = 1
+    end
+  end
+
+   config.vm.define "rocky3" do |config|
+    config.vm.box = "generic/rocky8"
+    config.vm.hostname = "rocky3"
+    config.vm.network "private_network", ip: "192.168.56.12"
+
+    config.vm.provision "shell", inline: <<-SHELL
+    sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+    systemctl restart sshd
+    dnf install podman -y   
+    sudo -u vagrant podman create --name pong alpine sleep 60
+    SHELL
+
+    config.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+        vb.cpus = 1
+    end
+  end
+end
+

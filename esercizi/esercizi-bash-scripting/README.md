@@ -1,5 +1,5 @@
-## SCRIPT #1
 
+## SCRIPT #1
 ```bash 
 #!/usr/bin/env bash
 
@@ -119,5 +119,5 @@ echo -e "$server: $media \v"
 done
 ```
 
-### SPIEGAZIONE LOGICA SCRIPT #2
+### SPIEGAZIONE SCRIPT #2 
 Lo script richiede all'utente il nome di un file contenente i dati relativi ai server e al loro utilizzo della CPU. Inizialmente verifica che il file esista e non sia vuoto, in caso contrario termina l'esecuzione con un messaggio di errore. Successivamente controlla che ogni riga del file sia nel formato corretto, cioè composta da un nome di server e da un valore numerico di utilizzo CPU, senza colonne aggiuntive. Una volta validati i dati, utilizza due array associativi: uno per accumulare la somma dei valori di CPU di ogni server e uno per contare quante volte ogni server compare nel file. Infine calcola l'utilizzo medio della CPU dividendo la somma totale per il numero di occorrenze e stampa un report finale con la percentuale media di utilizzo per ogni server.

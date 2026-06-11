@@ -2,9 +2,10 @@
 ## PINGPONG DEMO
 
 ```ruby
+Vagrant.configure("2") do |config|
+
 #1° MACCHINA
 
-Vagrant.configure("2") do |config|
     config.vm.define "rocky2" do |config|
     config.vm.box = "generic/rocky8"
     config.vm.hostname = "rocky2"
@@ -63,9 +64,10 @@ Ho configurato un ambiente composto da due macchine virtuali basate su Rocky Lin
 ## PINGPONG
 
 ```ruby
+Vagrant.configure("2") do |config|
+
 #1° MACCHINA
 
-Vagrant.configure("2") do |config|
     config.vm.define "rocky4" do |config|
     config.vm.box = "generic/rocky8"
     config.vm.hostname = "rocky4"

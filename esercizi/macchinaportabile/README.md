@@ -1,10 +1,11 @@
 ## DevOps Contest
 
 ```ruby
+Vagrant.configure("2") do |config|
+
 #1° MACCHINA
 
-Vagrant.configure("2") do |config|
-    config.vm.define "rocky2" do |config|
+config.vm.define "rocky2" do |config|
     config.vm.box = "generic/rocky8"
     config.vm.hostname = "rocky2"
     config.vm.network "private_network", ip: "192.168.56.10"

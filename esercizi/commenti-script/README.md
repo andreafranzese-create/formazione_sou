@@ -99,7 +99,7 @@ echo
 exit 0
 ```
 
-Questo script mostra come lavorare con i parametri passati da riga di comando. All’inizio stampa il nome dello script, sia con il percorso completo ($0) sia usando basename per ottenere solo il nome del file. Successivamente controlla la presenza dei parametri uno per uno, verificando che non siano vuoti prima di stamparli. Viene evidenziato anche il fatto che i parametri con indice maggiore di 9 devono essere scritti tra parentesi graffe. Infine lo script stampa tutti i parametri insieme tramite $* e controlla che il numero totale di argomenti ($#) sia almeno 10; se non lo è, mostra un messaggio di avviso.
+Questo script mostra come lavorare con i parametri passati da riga di comando. All’inizio stampa il nome dello script, sia con il percorso completo usando $0 sia usando basename per ottenere solo il nome del file. Successivamente controlla la presenza dei parametri uno per uno, verificando che non siano vuoti prima di stamparli. Viene evidenziato anche il fatto che i parametri con indice maggiore di 9 devono essere scritti tra parentesi graffe. Infine lo script stampa tutti i parametri insieme tramite $* e controlla che il numero totale di argomenti ($#) sia almeno 10; se non lo è, mostra un messaggio di avviso.
 
 ## ESEMPIO 4-2
 

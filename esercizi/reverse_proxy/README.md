@@ -104,6 +104,9 @@ systemctl restart haproxy
 end
 ```
 
+## ARCHITETTURA
+![](immagini/reverse_proxy.jpg)
+
 ## MACCHINA PRX-01
 Questa macchina funziona come reverse proxy: il traffico passa prima da lei, che fa da intermediario tra il client e i server a cui inoltra le richieste. Inizialmente è stata configurata in HTTP e successivamente in HTTPS per crittografare la comunicazione tra client e server.
 ### Configurazione 

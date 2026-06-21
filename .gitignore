@@ -1,5 +1,4 @@
-vagrant-test/
+**/vagrant-test/
 **/.vagrant/
 *.log
-condivisa/
-.gitignore
+**/esercizi/esercizi-*/

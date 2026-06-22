@@ -16,8 +16,6 @@ Vagrant.configure("2") do |config|
     apt update
     apt install -y haproxy
     mkdir -p /etc/ssl/mycerts
-    openssl req -new -x509 -days 365 -nodes -out /etc/ssl/mycerts/esempio.pem -keyout /etc/ssl/mycerts/esempio.key --subj "/C=IT/ST=Italy/L=Roma/O=Test/OU=IT/CN=esempio.com"
-    cat /etc/ssl/mycerts/esempio.pem /etc/ssl/mycerts/esempio.key > /etc/ssl/mycerts/esempioproxy.pem
     cat <<EOT > /etc/haproxy/haproxy.cfg
 global
     daemon
@@ -151,8 +149,8 @@ frontend esempio
 backend WEB-01
     server WEB-01 192.168.56.12:80 check
 
-backend WEB-01
-    server WEB-01 192.168.56.13:80 check
+backend WEB-02
+    server WEB-02 192.168.56.13:80 check
 ```
 ---
 #### GLOBAL
@@ -207,15 +205,31 @@ frontend esempio
 - use_backend WEB-02 if lavoro: inoltra le richieste al backend WEB-02 se è soddisfatta la ACL lavoro.
 - http-request deny unless scuola or lavoro: blocca tutte le richieste che non rispettano nessuna delle due condizioni.
 #### FRONTEND HTTPS
-Per rendere il frontend HTTPS c'è bisogno della coppia certificato/chiavi privata (TLS). In questo caso è stata una coppia chiave privata e certificato autofirmato:
+Per rendere il frontend HTTPS c'è bisogno della coppia certificato/chiavi privata (TLS). Come primo passo si generano la coppia di chiavi rsa:
 
 ```bash
-openssl req -new -x509 -days 365 -nodes -out /etc/ssl/mycerts/esempio.pem -keyout /etc/ssl/mycerts/esempio.key --subj "/C=IT/ST=Italy/L=Roma/O=Test/OU=IT/CN=esempio.com"
+openssl genrsa -out esempio.key 2048
 ```
-Per HAProxy serve un unico file che contiene insieme certificato e chiave privata. Si possono unire con il comando:
+Questo genera la chiave privata RSA a 2048 bit. Successivamente si genera la CSR(Certificate Signing Request):
 
 ```bash
-cat /etc/ssl/mycerts/esempio.pem /etc/ssl/mycerts/esempio.key > /etc/ssl/mycerts/esempioproxy.pem
+openssl req -new -key esempio.key -out esempio.csr
+```
+
+La CSR contiene:
+- La chiave pubblica
+- I metadati inseriti
+- Una firma digitale fatta con la chiave privata
+
+Successivamente dato che non abbiamo una CA, si genera un certificato self-signed firmato con la nostra chiave privata:
+
+```bash
+openssl x509 -req -days 365 -in esempio.csr -signkey esempio.key -out esempio.pem
+```
+HAproxy richiede che la chiave ed il certificato siano contenuti in un unico file. Per questo si utilizza il comando:
+
+```bash
+cat esempio.pem esempio.key > esempioproxy.pem
 ```
 
 Infine bisogna dire ad HAProxy dove trovare il file del certificato e quindi si rientra nel file haproxy.cfg e si scrive:
@@ -224,7 +238,6 @@ Infine bisogna dire ad HAProxy dove trovare il file del certificato e quindi si 
 frontend esempio_ssl
     bind *:443 ssl crt /etc/ssl/mycerts/esempioproxy.pem
 ```
-
 #### BACKEND
 La sezione backend definisce a quali server HAProxy deve mandare le richieste che arrivano dal frontend.
 
@@ -235,6 +248,9 @@ backend scuola
 backend lavoro
     server lavoro 192.168.56.13:80 check
 ```
+
+La direttiva check permette ad HAProxy di controllare periodicamente lo stato dei server del backend, verificando che siano attivi e raggiungibili.
+
 ---
 Completata la configurazione, il servizio HAProxy viene riavviato per applicare le modifiche con il comando:
 

@@ -152,7 +152,6 @@ Le espressioni regolari sono state progettate per riconoscere specifiche classi 
 #### Indirizzi zero (classe A)
 
 ```bash
-#ip Indirizzi zero classe A
 ^0\.((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
 ```
 
@@ -171,7 +170,6 @@ Le espressioni regolari sono state progettate per riconoscere specifiche classi 
 #### IP Linklocal (classe B)
 
 ```bash
-#ip linklocal classe B
 ^169\.254\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
 ```
 
@@ -180,7 +178,7 @@ Le espressioni regolari sono state progettate per riconoscere specifiche classi 
 ```bash
 ^172\.(1[6-9]|2[0-9]|3[0-1])\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
 ```
-#### IP TEST-NET-1 (classe C)
+#### IP TEST-NET-1 (classe C)
 
 ```bash
 ^192\.0\.2\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
@@ -193,7 +191,6 @@ Le espressioni regolari sono state progettate per riconoscere specifiche classi 
 #### IP privati (classe C)
 
 ```bash
-#ip privati classe C
 ^192\.168\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
 ```
 #### IP benchmark (classe C)
@@ -202,16 +199,15 @@ Le espressioni regolari sono state progettate per riconoscere specifiche classi 
 ^198\.1[8-9]\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
 ```
 
-#### IP multicast (classe D)
+#### IP multicast (classe D)
 
 ```bash
 ^(22[4-9]|23[0-9])\.((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
 ``` 
 
-#### IP riservati classe E
+#### IP riservati classe E
 
 ```bash
-#ip riservati classe E
 ^(24[0-9]|25[0-5])\.((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){2}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
 ```
 

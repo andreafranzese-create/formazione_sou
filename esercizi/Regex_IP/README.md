@@ -114,7 +114,7 @@ Tipo: Privato
 ```
 
 ```text
-$ ./classifica-ip.sh
+./classifica-ip.sh
 
 Inserire un'indirizzo IPV4: 127.0.0.1
 
@@ -124,7 +124,7 @@ Tipo: Loopback
 ```
 
 ```text
-$ ./classifica-ip.sh
+./classifica-ip.sh
 
 Inserire un'indirizzo IPV4: 999.1.1.1
 

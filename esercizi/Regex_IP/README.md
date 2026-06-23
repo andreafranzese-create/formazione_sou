@@ -183,16 +183,19 @@ Le espressioni regolari sono state progettate per riconoscere specifiche classi 
 ```bash
 ^192\.0\.2\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
 ```
+
 #### IP anycast (classe C)
 
 ```bash
 ^192\.88\.99\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
 ```
+
 #### IP privati (classe C)
 
 ```bash
 ^192\.168\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$
 ```
+
 #### IP benchmark (classe C)
 
 ```bash
@@ -213,6 +216,6 @@ Le espressioni regolari sono state progettate per riconoscere specifiche classi 
 
 ## Espressioni regolari: base vs estese
 
-Le espressioni regolari di base (BRE) utilizzano una sintassi più semplice e richiedono caratteri di escape (\) per alcuni operatori speciali, mentre le espressioni regolari estese (ERE) permettono l'utilizzo diretto di operatori come +, ?, | e ().
+Le espressioni regolari di base (BRE) utilizzano una sintassi più semplice e richiedono caratteri di escape (\\) per alcuni operatori speciali, mentre le espressioni regolari estese (ERE) permettono l'utilizzo diretto di operatori come +, ?, | e ().
 ## GREP vs EGREP
 Il comando `grep` viene utilizzato per le regex di base, mentre il comando `egrep` viene utilizzato per le regex estese

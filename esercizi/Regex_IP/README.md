@@ -215,4 +215,4 @@ Le espressioni regolari sono state progettate per riconoscere specifiche classi 
 
 Le espressioni regolari di base (BRE) utilizzano una sintassi più semplice e richiedono caratteri di escape (\) per alcuni operatori speciali, mentre le espressioni regolari estese (ERE) permettono l'utilizzo diretto di operatori come +, ?, | e ().
 ## GREP vs EGREP
-Il comando `grep` viene utilizzato le regex di base, mentre il comando `egrep` viene utilizzato per le regex estese
+Il comando `grep` viene utilizzato per le regex di base, mentre il comando `egrep` viene utilizzato per le regex estese

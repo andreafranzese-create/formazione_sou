@@ -6,7 +6,7 @@ Questo script interattivo orchestra il "`ping-pong`" di container tra due macchi
 ## Architettura
 
 <p aligne="center">
-    <img src="immagini/pingpong.drawio.jpg" alt="architettura" width="550" height="250">
+    <img src="immagini/pingpong.drawio.jpg" alt="architettura" width="610" height="320">
 </p>
 
 L'infrastruttura è composta da due VM provisionate con **Vagrant**, ciascuna con **Podman** installato.

@@ -1,8 +1,6 @@
 
 # PingPong di container con Podman
 
-Questo script interattivo orchestra il "`ping-pong`" di container tra due macchine, alternando l'esecuzione di un container tra un nodo locale e un nodo remoto raggiungibile tramite SSH ad intervalli di tempo predefiniti oppure senza limiti di durata
-
 ## Architettura
 
 <p aligne="center">
@@ -11,7 +9,7 @@ Questo script interattivo orchestra il "`ping-pong`" di container tra due macchi
 
 L'infrastruttura è composta da due VM provisionate con **Vagrant**, ciascuna con **Podman** installato.
 
-- **Nodo locale(orchestratore)**:
+- **Nodo locale (orchestratore)**:
   - `192.168.56.11` 
   - esegue lo `script`
 - **Nodo remoto (worker)**:

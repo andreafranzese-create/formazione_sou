@@ -103,7 +103,10 @@ end
 ```
 
 ## ARCHITETTURA
-![](immagini/reverse_proxy.jpg)
+
+<p aligne="center">
+    <img src="immagini/reverse_proxy.jpg" alt="architettura" width="500" height="500">
+</p>
 
 ## MACCHINA PRX-01
 Questa macchina funziona come reverse proxy: il traffico passa prima da lei, che fa da intermediario tra il client e i server a cui inoltra le richieste. Inizialmente è stata configurata in HTTP e successivamente in HTTPS per crittografare la comunicazione tra client e server.

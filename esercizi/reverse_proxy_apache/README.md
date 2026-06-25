@@ -14,7 +14,7 @@ Questa macchina funziona come reverse proxy: il traffico passa prima da lei, che
 - Pacchetti installati: apache2
 ## Funzionamento
 
-Dopo l'installazione del pacchetto apache2, è stato generato un certificato autofirmato nella directory /etc/ssl/mycerts. Come primo passo si generano la coppia di chiavi rsa:
+Dopo l'installazione del pacchetto apache2, è stato generato un **certificato autofirmato** nella directory /etc/ssl/mycerts. Come primo passo si generano la coppia di chiavi rsa:
 
 ```bash
 openssl genrsa -out esempio.key 2048
@@ -27,9 +27,9 @@ openssl req -new -key esempio.key -out esempio.csr
 ```
 
 La CSR contiene:
-- La chiave pubblica
-- I metadati inseriti
-- Una firma digitale fatta con la chiave privata
+- **La chiave pubblica**
+- **I metadati inseriti**
+- **Una firma digitale fatta con la chiave privata**
 
 Successivamente dato che non abbiamo una CA, si genera un certificato self-signed firmato con la nostra chiave privata:
 
@@ -39,23 +39,26 @@ openssl x509 -req -days 365 -in esempio.csr -signkey esempio.key -out esempio.pe
 Successivamente sono stati abilitati i moduli di apache:
 
 ```bash
-a2enmod proxy proxy_http ssl
+a2enmod proxy proxy_http ssl headers
 ```
-- proxy: è il modulo base del reverse proxy
-- proxy_http: è il modulo per comunicare con i backend in HTTP
-- ssl: è il modulo che gestisce le connessioni HTTPS
+- **proxy**: è il modulo base del reverse proxy
+- **proxy_http**: è il modulo per comunicare con i backend in HTTP
+- **ssl**: è il modulo che gestisce le connessioni HTTPS
+- **headers**: èl modulo che serve a modificare, aggiungere, rimuovere o riscrivere gli header HTTP nelle richieste e nelle risposte
 
 Successivamente è stato creato il file reverse_proxy.conf nella directory /etc/apache2/sites-available:
 
 ```bash
 <VirtualHost *:443>
-
     SSLEngine On
     SSLCertificateFile    /etc/ssl/mycerts/esempio.pem
     SSLCertificateKeyFile /etc/ssl/mycerts/esempio.key
 
-    ProxyRequests Off
+    RequestHeader set X-Forwarded-Proto "https"
+    RequestHeader set X-Forwarded-Port "443"
+    RequestHeader set X-Forwarded-For "%{REMOTE_ADDR}s"
 
+    ProxyRequests Off
     ProxyPass        /scuola  http://192.168.56.12/
     ProxyPassReverse /scuola  http://192.168.56.12/
 
@@ -74,7 +77,7 @@ Successivamente è stato creato il file reverse_proxy.conf nella directory /etc/
 <VirtualHost *:443>
 ```
 
-Definisce un Virtual Host che ascolta su tutte le interfacce di rete sulla porta 443
+Definisce un Virtual Host che ascolta su tutte le interfacce di rete sulla porta `443`
 
 ```bash
 SSLEngine On
@@ -82,33 +85,43 @@ SSLCertificateFile    /etc/ssl/mycerts/esempio.pem
 SSLCertificateKeyFile /etc/ssl/mycerts/esempio.key
 ```
 
-- SSLEngine On: attiva la cifratura HTTPS su questo virtual host
-- SSLCertificateFile: percorso del certificato autofirmato (.pem)
-- SSLCertificateKeyFile: percorso della chiave privata (.key), usata per cifrare la comunicazione
+- `SSLEngine On`: attiva la cifratura HTTPS su questo virtual host
+- `SSLCertificateFile`: percorso del certificato autofirmato (.pem)
+- `SSLCertificateKeyFile`: percorso della chiave privata (.key), usata per cifrare la comunicazione
+
+```bash
+RequestHeader set X-Forwarded-Proto "https"
+RequestHeader set X-Forwarded-Port "443"
+RequestHeader set X-Forwarded-For "%{REMOTE_ADDR}s"
+```
+
+- `RequestHeader set X-Forwarded-Proto "https"`: indica ai backend che il client si è connesso in HTTPS, così le applicazioni generano i redirect con https:// invece che http://.
+- `RequestHeader set X-Forwarded-Port "443"`: indica che la connessione originale era sulla porta 443.
+- `RequestHeader set X-Forwarded-For "%{REMOTE_ADDR}s"`: trasmette ai backend l'IP reale del client (altrimenti vedrebbero solo quello del proxy).
 
 ```bash
 ProxyRequests Off
 ```
 
-- ProxyRequests Off: disabilita il forward proxy cioè Apache non può essere utilizzato dai client per navigare su internet
+- `ProxyRequests Off`: disabilita il forward proxy cioè Apache non può essere utilizzato dai client per navigare su internet
 
 ```bash
 ProxyPass        /scuola  http://192.168.56.12/
 ProxyPassReverse /scuola  http://192.168.56.12/
 ```
 
-- ProxyPass: tutte le richieste che arrivano su /scuola vengono inoltrate al server 192.168.56.12
-- ProxyPassReverse: riscrive l'indirizzo nei redirect del backend, sostituendo l'IP interno con quello del proxy, in modo che il client non tenti di contattare direttamente un server che non può raggiungere.
+- `ProxyPass`: tutte le richieste che arrivano su /scuola vengono inoltrate al server 192.168.56.12
+- `ProxyPassReverse`: riscrive l'indirizzo nei redirect del backend, sostituendo l'IP interno con quello del proxy, in modo che il client non tenti di contattare direttamente un server che non può raggiungere.
 
 ```bash
 ErrorLog  ${APACHE_LOG_DIR}/proxy_ssl_error.log
 CustomLog ${APACHE_LOG_DIR}/proxy_ssl_access.log combined
 ```
 
-- ErrorLog → è il file dove Apache scrive gli errori
-- CustomLog → è il file dove vengono registrati tutti gli accessi
-- combined → formato di log standard 
-- ${APACHE_LOG_DIR}: variabile Apache che punta a /var/log/apache2/
+- `ErrorLog`: è il file dove Apache scrive gli errori
+- `CustomLog`: è il file dove vengono registrati tutti gli accessi
+- `combined`: formato di log standard 
+- `${APACHE_LOG_DIR}`: variabile Apache che punta a /var/log/apache2/
 ---
 Successivamente la configurazione del reverse proxy è stata abilitata tramite il comando:
 

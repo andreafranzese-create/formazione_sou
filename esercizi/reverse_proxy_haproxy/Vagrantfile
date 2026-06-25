@@ -1,0 +1,98 @@
+Vagrant.configure("2") do |config|
+    
+    #MACCHINA 1
+
+    config.vm.define "PRX-01" do |config|
+    config.vm.box = "ubuntu/jammy64"
+    config.vm.hostname = "PRX-01"
+    config.vm.network "private_network", ip: "192.168.56.11"
+    config.vm.network "forwarded_port", guest: 443, host: 8080
+    
+    config.vm.provision "shell", inline: <<-SHELL
+    apt update
+    apt install -y haproxy
+    mkdir -p /etc/ssl/mycerts
+    cat <<EOT > /etc/haproxy/haproxy.cfg
+global
+    daemon
+    log /dev/log local0
+
+defaults
+    mode http
+    log global
+    option forwardfor
+    timeout connect 5s
+    timeout client 30s
+    timeout server 30s
+
+
+frontend esempio_ssl
+    bind *:443 ssl crt /etc/ssl/mycerts/esempioproxy.pem
+
+    acl scuola path_beg /scuola
+    acl lavoro path_beg /lavoro
+
+    use_backend WEB-01 if scuola
+    use_backend WEB-02 if lavoro
+
+    http-request deny unless scuola or lavoro
+
+backend WEB-01
+    server WEB-01 192.168.56.12:80 check
+
+backend WEB-02
+    server WEB-02 192.168.56.13:80 check
+EOT
+systemctl restart haproxy
+    SHELL
+
+
+    config.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+        vb.cpus = 1
+    end
+  end
+
+    #MACCHINA 2
+
+   config.vm.define "WEB-01" do |config|
+    config.vm.box = "ubuntu/jammy64"
+    config.vm.hostname = "WEB-01"
+    config.vm.network "private_network", ip: "192.168.56.12"
+    config.vm.synced_folder "./condivisa", "/condivisa"
+    config.vm.provision "shell", inline: <<-SHELL
+    apt update
+    apt install -y apache2
+    mkdir -p /var/www/html/WEB-01
+    echo "HELLO FROM WEB-01" > /var/www/html/WEB-01/index.html
+    systemctl restart apache2
+    SHELL
+
+    config.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+        vb.cpus = 1
+    end
+  end
+
+    #MACCHINA 3
+
+   config.vm.define "WEB-02" do |config|
+    config.vm.box = "ubuntu/jammy64"
+    config.vm.hostname = "WEB-02"
+    config.vm.network "private_network", ip: "192.168.56.13"
+    config.vm.synced_folder "./condivisa", "/condivisa"
+    
+    config.vm.provision "shell", inline: <<-SHELL
+    apt update
+    apt install -y apache2
+    mkdir -p /var/www/html/WEB-02
+    echo "HELLO FROM WEB-02" > /var/www/html/WEB-02/index.html
+    systemctl restart apache2
+    SHELL
+
+    config.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+        vb.cpus = 1
+    end
+  end
+end

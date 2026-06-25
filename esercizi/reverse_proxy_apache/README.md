@@ -1,63 +1,6 @@
 
 # REVERSE PROXY (apache2)
 
-```ruby
-Vagrant.configure("2") do |config|
-
-      #MACCHINA 1
-
-    config.vm.define "PRX-01" do |config|
-    config.vm.box = "ubuntu/jammy64"
-    config.vm.hostname = "PRX-01"
-    config.vm.network "private_network", ip: "192.168.56.11"
-    config.vm.synced_folder "./condivisa", "/condivisa"
-    config.vm.provision "shell", inline: <<-SHELL
-        apt update
-        apt install -y apache2
-    SHELL
-
-    config.vm.provider "virtualbox" do |vb|
-        vb.memory = "1024"
-        vb.cpus = 1
-    end
-  end
-
-      #MACCHINA 2
-
-   config.vm.define "WEB-01" do |config|
-    config.vm.box = "ubuntu/jammy64"
-    config.vm.hostname = "WEB-01"
-    config.vm.network "private_network", ip: "192.168.56.12"
-    config.vm.provision "shell", inline: <<-SHELL
-        apt update
-        apt install -y apache2
-    SHELL
-    
-    config.vm.provider "virtualbox" do |vb|
-        vb.memory = "1024"
-        vb.cpus = 1
-    end
-  end
-
-   #MACCHINA 3
-
-   config.vm.define "WEB-02" do |config|
-    config.vm.box = "ubuntu/jammy64"
-    config.vm.hostname = "WEB-02"
-    config.vm.network "private_network", ip: "192.168.56.13"
-    config.vm.provision "shell", inline: <<-SHELL
-        apt update
-        apt install -y apache2
-    SHELL
-    
-    config.vm.provider "virtualbox" do |vb|
-        vb.memory = "1024"
-        vb.cpus = 1
-    end
-  end
-end
-```
-
 ## MACCHINA PRX-01
 Questa macchina funziona come reverse proxy: il traffico passa prima da lei, che fa da intermediario tra il client e i server a cui inoltra le richieste. Inizialmente è stata configurata in HTTP e successivamente in HTTPS per crittografare la comunicazione tra client e server.
 ### Configurazione
@@ -70,6 +13,7 @@ Questa macchina funziona come reverse proxy: il traffico passa prima da lei, che
   - IP statico: 192.168.56.11
 - Pacchetti installati: apache2
 ## Funzionamento
+
 Dopo l'installazione del pacchetto apache2, è stato generato un certificato autofirmato nella directory /etc/ssl/mycerts. Come primo passo si generano la coppia di chiavi rsa:
 
 ```bash

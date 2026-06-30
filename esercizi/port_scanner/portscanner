@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+barra(){
+echo
+echo "Verifico se l'host è raggiungibile:"
+while true;do
+sleep 0.5
+echo -n "====="
+done
+}
+
+chiusura() {
+    kill "$pid" 2>/dev/null
+    wait "$pid" 2>/dev/null
+}
+
+interruzione() {
+	kill "$pid" 2>/dev/null
+        wait "$pid" 2>/dev/null
+        echo "Interruzione forzata"
+	exit 6
+}
+
+host=""
+range_porte=""
+protocol=""
+
+trap interruzione SIGINT
+
+while getopts "h:r:p:" opz; do
+  case "$opz" in
+    h) host="$OPTARG" ;;
+    r) range_porte="$OPTARG" ;;
+    p) protocol="$OPTARG" ;;
+  esac
+done
+
+portai=$(echo "$range_porte" | awk -F'-' '{print $1}')
+portaf=$(echo "$range_porte" | awk -F'-' '{print $2}')
+
+if [[ -z "$host" || -z "$range_porte" || -z "$protocol" || $# -gt 6 ]]; then
+    echo "ERRORE! COMANDO: -h IP -r PORTA_INIZIALE-PORTA_FINALE -p UDP/TCP"
+    exit 1
+elif [[ ! "$host" =~ ^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])$ ]]; then
+    echo "ERRORE! Inserire un IP valido"
+    exit 2
+elif [[ "$portai" -gt 65535 || "$portaf" -gt 65535 || "$range_porte" =~ [a-zA-Z] ]]; then
+    echo "ERRORE! Inserire un range di porte valido (PORTA_INIZIALE-PORTA_FINALE)"
+    exit 3
+fi
+
+if [[ $protocol != "UDP" && $protocol != "TCP" ]];then
+    echo "ERRORE! Inserire un protocollo valido (UPD,TCP)"
+    exit 4
+fi
+
+barra &
+pid=$!
+
+if ! timeout 4 ping -c 4 "$host" >/dev/null ; then
+    echo 
+    echo "HOST NON RAGGIUNGIBILE"
+    echo 
+    exit 5
+fi
+
+chiusura
+
+echo 
+echo "L'HOST E' RAGGIUNGIBILE"
+echo
+
+echo "======================================"
+echo " Scansione porte $protocol di $host"
+echo " Range: $portai-$portaf"
+echo "======================================"
+
+if [[ $protocol == "TCP" ]]; then
+    for ((i=portai;i<=portaf;i++));do
+        if echo | nc -w 1 $host $i &> /dev/null; then
+            pid=$!
+	    echo "Porta $i: in ascolto"
+        fi 
+    done
+else
+    for ((k=portai;k<=portaf;k++));do
+        if echo | nc -u -w 1 $host $k &> /dev/null; then
+            echo "Porta $k: in ascolto"
+        fi
+    done
+fi
+echo

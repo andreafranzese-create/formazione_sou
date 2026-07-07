@@ -1,0 +1,273 @@
+#!/usr/bin/env bash
+
+menu(){
+echo
+echo "================================================"
+echo "||  Rompicapo Contadino, Capra, Lupo, Cavolo  ||"
+echo "================================================"
+echo
+}
+
+menu_sponde() {
+    echo "=============="
+    echo "|| Sponda 1 ||"
+    echo "=============="
+
+    docker ps --format '{{.Names}}'
+     
+    echo
+    echo "~~~~~~~~~~~~~~"
+    echo "  ><>   D<>   "
+    echo "~~~~~~~~~~~~~~"
+
+    echo
+    echo "=============="
+    echo "|| Sponda 2 ||"
+    echo "=============="
+
+    ssh vagrant@192.168.56.12 "docker ps --format '{{.Names}}'"
+    echo
+}
+
+verifica() {
+if docker container inspect "lupo" &>/dev/null; then
+    lupo=1
+fi
+
+if docker container inspect "capra" &>/dev/null; then
+     capra=1
+fi  
+
+if docker container inspect "contadino" &>/dev/null; then
+    contadino=1
+fi
+
+if docker container inspect "cavolo" &>/dev/null; then
+    cavolo=1
+fi   
+
+if ssh vagrant@192.168.56.12 "docker container inspect 'lupo'" &>/dev/null; then
+    lupo=2
+fi
+
+if ssh vagrant@192.168.56.12 "docker container inspect 'capra'" &>/dev/null; then
+    capra=2
+fi
+
+if ssh vagrant@192.168.56.12 "docker container inspect 'contadino'" &>/dev/null; then
+    contadino=2
+fi
+
+if ssh vagrant@192.168.56.12 "docker container inspect 'cavolo'" &>/dev/null; then
+    cavolo=2
+fi
+
+if (( lupo == capra && capra == cavolo && lupo != contadino ));then
+	echo
+	echo "Hai perso! La capra ha mangiato il cavolo e quando ha finito è stata mangiata dal lupo!"
+	echo
+	exit 1
+fi
+
+if (( lupo == capra && lupo != contadino )); then
+    echo
+    echo "Hai perso! Il lupo ha mangiato la capra"
+    echo
+    exit 1
+fi
+
+if (( capra == cavolo && capra != contadino )); then
+    echo
+    echo "Hai perso! La capra ha mangiato il cavolo"
+    echo
+    exit 1
+fi
+}
+
+vittoria() {
+if (( capra == 2 && cavolo == 2 && contadino == 2 && lupo == 2 )); then
+    menu_sponde 
+    menu
+    
+    echo "Congratulazioni hai vinto!"
+    echo "Mosse effettuate: $mosse"
+    echo
+    exit 0
+fi
+}
+
+contadino_loc() {
+	docker rm -f contadino &>/dev/null
+        ssh vagrant@192.168.56.12 "docker run -d --name contadino -p 8083:80 ealen/echo-server" &>/dev/null
+} 
+
+contadino_rem() {
+        ssh vagrant@192.168.56.12 "docker rm -f contadino" &>/dev/null
+	docker run -d --name contadino -p 8083:80 ealen/echo-server &>/dev/null
+}
+
+cleanup() {
+docker rm -f contadino capra lupo cavolo &>/dev/null
+ssh vagrant@192.168.56.12 "docker rm -f contadino capra lupo cavolo" &>/dev/null
+}
+
+lupo=1
+capra=1
+cavolo=1
+contadino=1
+mosse=0
+
+trap cleanup EXIT
+
+    docker run -d --name capra -p 8080:80 ealen/echo-server &>/dev/null
+    docker run -d --name lupo -p 8081:80 ealen/echo-server &>/dev/null
+    docker run -d --name cavolo -p 8082:80 ealen/echo-server &>/dev/null
+    docker run -d --name contadino -p 8083:80 ealen/echo-server &>/dev/null
+
+while true; do    
+    while true; do
+    menu
+    menu_sponde
+    
+    read -p "Chi vuoi portare sulla sponda 2? " opt
+
+    if [[ "$opt" == "capra" ]] && (( capra == 2 )); then
+	    echo "Inserire un attore presente nella sponda!"
+	    echo
+	    continue
+    fi
+
+    if [[ "$opt" == "lupo" ]] && (( lupo == 2 )); then
+            echo "Inserire un attore presente nella sponda!"
+	    echo
+            continue
+    fi
+
+    if [[ "$opt" == "cavolo" ]] && (( cavolo == 2 )); then
+            echo "Inserire un attore presente nella sponda!"
+	    echo
+            continue
+    fi
+
+    if [[ "$opt" == "contadino" ]] && (( contadino == 2 )); then
+            echo "Inserire un attore presente nella sponda!"
+	    echo
+            continue
+    fi
+
+    case "$opt" in
+	    contadino)
+		    contadino_loc
+		    ((mosse++))
+		    verifica
+		    break
+		    ;;
+	    lupo)
+		    contadino_loc
+	            docker stop lupo &>/dev/null
+	            docker rm lupo &>/dev/null
+	            ssh vagrant@192.168.56.12 "docker run -d --name lupo -p 8081:80 ealen/echo-server" &>/dev/null
+		    ((mosse++))
+		    verifica
+		    break
+		    ;;
+	    capra)
+		    contadino_loc
+	            docker stop capra &>/dev/null
+	            docker rm capra &>/dev/null
+		    ssh vagrant@192.168.56.12 "docker run -d --name capra -p 8080:80 ealen/echo-server" &>/dev/null
+		    ((mosse++))
+		    verifica
+		    break
+		    ;;
+	    cavolo)
+		    contadino_loc
+	            docker stop cavolo &>/dev/null
+	            docker rm cavolo &>/dev/null
+		    ssh vagrant@192.168.56.12 "docker run -d --name cavolo -p 8082:80 ealen/echo-server" &>/dev/null
+		    ((mosse++))
+		    verifica
+		    break
+		    ;;
+	    *)
+	            echo
+		    echo "Inserire un'attore valido"
+		    echo
+    esac
+    done
+vittoria
+while true; do
+    menu
+    menu_sponde
+
+    read -p "Chi vuoi portare sulla sponda 1? " opt
+
+    if [[ "$opt" == "capra" ]] && (( capra == 1 )); then
+            echo
+	    echo "Inserire un attore presente nella sponda!"
+	    echo
+            continue
+    fi
+
+    if [[ "$opt" == "lupo" ]] && (( lupo == 1 )); then
+            echo
+	    echo "Inserire un attore presente nella sponda!"
+	    echo
+            continue
+    fi
+
+    if [[ "$opt" == "cavolo" ]] && (( cavolo == 1 )); then
+            echo
+	    echo "Inserire un attore presente nella sponda!"
+	    echo
+            continue
+    fi
+
+    if [[ "$opt" == "contadino" ]] && (( contadino == 1 )); then
+            echo
+	    echo "Inserire un attore presente nella sponda!"
+	    echo
+            continue
+    fi
+
+    case "$opt" in
+	    contadino)
+		    contadino_rem
+		    ((mosse++))
+		    verifica
+		    break
+		    ;;
+            lupo)
+		    contadino_rem
+		    ssh vagrant@192.168.56.12 "docker stop lupo" &>/dev/null
+		    ssh vagrant@192.168.56.12 "docker rm lupo" &>/dev/null
+		    docker run -d --name lupo -p 8081:80 ealen/echo-server &>/dev/null
+		    ((mosse++))
+		    verifica
+		    break
+		    ;;
+            capra)
+		    contadino_rem
+             	    ssh vagrant@192.168.56.12 "docker stop capra" &>/dev/null
+                    ssh vagrant@192.168.56.12 "docker rm capra" &>/dev/null
+                    docker run -d --name capra -p 8080:80 ealen/echo-server &>/dev/null
+		    ((mosse++))
+		    verifica
+		    break
+		    ;;
+	    cavolo)
+		    contadino_rem
+		    ssh vagrant@192.168.56.12 "docker stop cavolo" &>/dev/null
+                    ssh vagrant@192.168.56.12 "docker rm cavolo" &>/dev/null
+                    docker run -d --name cavolo -p 8082:80 ealen/echo-server &>/dev/null
+		    ((mosse++))
+		    verifica
+		    break
+                    ;;
+	    *)
+                    echo "Inserire un'attore valido"
+		    echo
+    esac
+    done
+done
+

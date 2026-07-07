@@ -1,0 +1,60 @@
+---
+- hosts: all
+  become: true
+
+  tasks:
+    - name: Prendere lo script
+      get_url:
+        url: https://get.docker.com
+        dest: /root/get-docker.sh
+
+    - name: Dare permessi allo script
+      file:
+        path: /root/get-docker.sh
+        mode: '0755'
+
+    - name: Avvia lo script per scaricare docker
+      command: /root/get-docker.sh
+      args:
+        creates: /usr/bin/docker
+
+    - name: Aggiungi l'utente vagrant al gruppo docker
+      user:
+        name: vagrant
+        groups: docker
+        append: true
+
+    - name: Copia lo script del rompicapo nelle vm
+      copy:
+        src: /Users/andreafranzese/Desktop/projects/formazione_sou/vagrant-test/rompicapo
+        dest: /root/rompicapo
+        owner: root
+        group: root
+        mode: '0755'
+      when: ansible_hostname == "ub1"
+    
+    - name: Genera chiavi ssh
+      command: ssh-keygen -t ed25519  -f /root/.ssh/id_ed25519 -N ""
+      args:
+        creates: /root/.ssh/id_ed25519
+      when: ansible_hostname == "ub1"
+
+    - name: Leggi il file con cat
+      command: cat /root/.ssh/id_ed25519.pub
+      register: pubkey
+      when: ansible_hostname == "ub1"
+
+    - name: Copia la chiave pubblica nella seconda macchina
+      authorized_key:
+       user: vagrant
+       state: present
+       key: "{{ hostvars['ub1'].pubkey.stdout }}" 
+      when: ansible_hostname ==   "ub2" 
+
+    - name: Config SSH globale
+      lineinfile:
+        path: /etc/ssh/ssh_config
+        line: "StrictHostKeyChecking no"
+      
+    - name: Pull dell'immagine docker
+      command: docker pull ealen/echo-server:latest

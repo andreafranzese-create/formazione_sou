@@ -1,0 +1,46 @@
+---
+- name: Scarica una lista di pacchetti e crea una lista di utenti
+  hosts: all
+  become: true
+  gather_facts: false
+  
+  vars:
+    pacchetti:
+      nginx: present
+      apache2: present   
+      curl: absent
+    utenti:
+      - nome: franco
+        group: sudo
+        shell: /bin/bash
+      - nome: luca
+        group: sudo
+        shell: /bin/sh
+      - nome: francesco
+        group: sudo
+        shell: /bin/zsh
+
+  vars_files:
+    - vault.yaml
+
+  tasks:
+    - name: Installa pacchetti
+      ansible.builtin.package:
+        name: "{{ item.key }}"
+        state: "{{ item.value }}"
+        update_cache: true
+      loop: "{{ pacchetti | dict2items }}"
+    
+    - name: Crea utenti
+      ansible.builtin.user:
+        name: "{{ item.nome }}"
+        group: "{{ item.group }}"
+        shell: "{{ item.shell }}"
+        append: true
+        state: present
+      loop: "{{ utenti }}"
+      
+    - name: Stampa la password degli utenti
+      ansible.builtin.debug:
+        msg: "La password di {{ item.utente }} è {{ item.password }}"
+      loop: "{{ passwords }}"

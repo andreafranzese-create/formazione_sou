@@ -1,0 +1,7 @@
+ip_server: 192.168.56.10
+porta: 80
+server_name: esempio.com
+server_alias: www.esempio.com
+document_root: /var/www/html
+certificate_file: /etc/ssl/certs/esempio.com.crt
+certificate_key: /etc/ssl/private/esempio.com.key

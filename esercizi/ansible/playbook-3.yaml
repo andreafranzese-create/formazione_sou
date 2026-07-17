@@ -1,0 +1,55 @@
+- name: Setup Apache e limiti di sistema
+  hosts: all
+  become: true
+  gather_facts: false
+
+  vars_files:
+    - vars.yaml
+  
+  vars:
+    users:
+      - name: vagrant
+        tipo_accesso: ALL
+        tipo_limite: 
+          - hard
+          - soft
+      - name: root
+        tipo_accesso: 192.168.1.0/24
+        tipo_limite:
+          - hard
+          - soft
+    ambiente: dev
+    
+  tasks:
+    - name: Limita numero di file aperti
+      ansible.builtin.lineinfile:
+        path: /etc/security/limits.conf
+        regexp: '^{{ item.0.name }}\\s+{{ item.1 }}\\s+nofile\\s+(10000|1000)$'
+        line: "{{ item.0.name }} {{ item.1 }} nofile {{ 10000 if ambiente == 'produzione' else 1000 }}"
+      loop: "{{ users | subelements('tipo_limite') }}"
+    
+    - name: Whitelist accesso utenti
+      ansible.builtin.lineinfile:
+        path: /etc/security/access.conf
+        regexp: '^\+:{{ item.0.name }}'
+        insertbefore: '^-:ALL:ALL'
+        line: "+:{{ item.0.name }}:{{ item.0.tipo_accesso }}"
+      loop: "{{ users | subelements('tipo_limite') }}"
+
+    - name: Scarica il pacchetto apache2
+      ansible.builtin.apt:
+        name: apache2
+        state: present
+
+    - name: Configurazione apache2 con template
+      ansible.builtin.template:
+        src: "template.j2"
+        dest: "/etc/apache2/sites-enabled/000-default.conf"
+      notify:
+        - restarta apache2
+  
+  handlers:
+    - name: restarta apache2
+      service:
+        name: apache2
+        state: restarted

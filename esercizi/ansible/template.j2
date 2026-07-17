@@ -1,0 +1,23 @@
+{# Template di un VirtualHost di apache #}
+
+<VirtualHost {{ ip_server }}:{{ porta }}>
+    ServerName {{ server_name }}
+    ServerAlias {{ server_alias }}
+
+    DocumentRoot {{ document_root }}
+
+{% if porta == 443 %}
+    SSLEngine on
+    SSLCertificateFile      {{ certificate_file }}
+    SSLCertificateKeyFile   {{ certificate_key }}
+{% endif %}
+
+    <Directory {{ document_root }}>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog  ${APACHE_LOG_DIR}/{{ server_name }}-ssl-error.log
+    CustomLog ${APACHE_LOG_DIR}/{{ server_name }}-ssl-access.log combined
+</VirtualHost>

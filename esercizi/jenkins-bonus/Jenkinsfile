@@ -15,7 +15,7 @@ pipeline {
                 expression { return (env.GIORNO as Integer) >= 6 }
             }
             steps {
-                unstable "E'sconsigliato eseguire build nel weekend!"
+                error("E'sconsigliato eseguire build nel weekend!")
             }
         }
         stage('PRODUCTION') {

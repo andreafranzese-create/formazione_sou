@@ -1,0 +1,77 @@
+def buildAndPushTag(Map args) {
+
+  def defaults = [
+    registryUrl: 'docker.io',
+    credRegistry: 'credenziali-dockerhub',
+    dockerfileDir: "./jenkins"
+  ]
+
+  args = defaults + args
+
+  env.IMAGE_NAME = "${args.image}:${args.buildTag}"
+
+  withCredentials([usernamePassword(
+    credentialsId: args.credRegistry,
+    usernameVariable: 'USER',
+    passwordVariable: 'PASS'
+  )]) {
+    try {
+      sh 'echo "$PASS" | podman login ' + args.registryUrl + ' -u "$USER" --password-stdin'
+      sh "podman build  -t ${args.image}:${args.buildTag} ${args.dockerfileDir}"
+      sh "podman push ${args.image}:${args.buildTag}"
+    }
+
+    finally {
+      sh "podman rmi --force ${args.image}:${args.buildTag}"
+      sh "podman logout ${args.registryUrl}"
+    }
+  }
+}
+
+def determineTag() {
+  def tag = sh(
+    script: 'git describe --tags --exact-match || true',
+    returnStdout: true
+  ).trim()
+
+  def branch = env.GIT_BRANCH.replaceAll('^origin/', '')
+    
+  def commitHash = sh(
+    script: 'git rev-parse --short HEAD',
+    returnStdout: true
+  ).trim()
+  
+  if (tag) {
+    return tag
+  } else if (branch == 'main') {
+    return 'latest'
+  } else {
+    return "${branch}-${commitHash}"
+  }
+}
+
+pipeline {
+  agent any
+
+  stages {
+    stage('getTag') {
+      steps {
+        script {
+          sh 'git fetch --tags'
+          env.TAG = determineTag()
+        }
+      }
+    }
+    stage('Build & Push') {
+      steps {
+        script {
+            buildAndPushTag(
+            image: 'andry67/helloworld',
+            buildTag: env.TAG         
+            )
+            echo "Immagine pubblicata: ${env.IMAGE_NAME}"
+        }
+      }
+    }
+  }
+}

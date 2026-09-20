@@ -49,7 +49,7 @@
        user: vagrant
        state: present
        key: "{{ hostvars['ub1'].pubkey.stdout }}" 
-      when: ansible_hostname ==   "ub2" 
+      when: ansible_hostname == "ub2" 
 
     - name: Config SSH globale
       lineinfile:
